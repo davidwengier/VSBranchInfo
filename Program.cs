@@ -20,7 +20,7 @@ namespace CreateTagsForVSRelease
 {
     public static class Program
     {
-        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.7", "master" };
+        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.7", "rel/d16.8", "rel/d16.9", "main" };
 
         public static async Task Main(string[] args)
         {
@@ -41,7 +41,16 @@ namespace CreateTagsForVSRelease
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(branch + ":");
                 Console.ResetColor();
-                await TryGetRoslynBuildForReleaseAsync(branch, gitClient, buildClient);
+                try
+                {
+                    await TryGetRoslynBuildForReleaseAsync(branch, gitClient, buildClient);
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Error: " + ex.Message);
+                    Console.ResetColor();
+                }
                 Console.WriteLine();
             }
         }
