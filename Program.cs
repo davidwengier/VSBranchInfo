@@ -74,12 +74,12 @@ namespace CreateTagsForVSRelease
             var parts = languageServicesUrlAndManifestName.Split(';');
             if (parts.Length != 2)
             {
-                return;
+                throw new Exception("Couldn't get URL and manifest. Got: " + parts);
             }
 
             if (!parts[1].EndsWith(".vsman"))
             {
-                return;
+                throw new Exception("Couldn't get URL and manifest. Not a vsman file? Got: " + parts);
             }
 
             using var defaultConfigStream = await gitClient.GetItemContentAsync(
@@ -100,7 +100,7 @@ namespace CreateTagsForVSRelease
 
             if (build == null)
             {
-                return;
+                throw new Exception("Couldn't find build for package version: " + packageVersion);
             }
 
             Console.WriteLine("Package Version: " + packageVersion);
