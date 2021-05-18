@@ -20,7 +20,7 @@ namespace CreateTagsForVSRelease
 {
     public static class Program
     {
-        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.7", "rel/d16.8", "rel/d16.9", "main" };
+        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.9", "rel/d16.10", "main" };
 
         public static async Task Main(string[] args)
         {
