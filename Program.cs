@@ -20,7 +20,7 @@ namespace CreateTagsForVSRelease
 {
     public static class Program
     {
-        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.9", "rel/d16.10", "main" };
+        private static readonly string[] s_visualStudioBranches = new[] { "rel/d16.9", "rel/d16.10", "rel/d16.11", "main" };
 
         public static async Task Main(string[] args)
         {
@@ -50,8 +50,8 @@ namespace CreateTagsForVSRelease
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Error: " + ex.Message);
                     Console.ResetColor();
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
             }
         }
 
@@ -96,17 +96,22 @@ namespace CreateTagsForVSRelease
             var buildNumber = new Uri(parts[0]).Segments.Last();
 
             var buildDefinition = (await buildClient.GetDefinitionsAsync(vsRepository.ProjectReference.Id, name: "Roslyn-Signed")).Single();
-            var build = (await buildClient.GetBuildsAsync(buildDefinition.Project.Id, definitions: new[] { buildDefinition.Id }, buildNumber: buildNumber)).SingleOrDefault();
+            var builds = await buildClient.GetBuildsAsync(buildDefinition.Project.Id, definitions: new[] { buildDefinition.Id }, buildNumber: buildNumber);
+            foreach (var build in builds)
+            {
+                Console.WriteLine("Package Version: " + packageVersion);
+                Console.WriteLine("Commit Sha: " + build.SourceVersion);
+                Console.WriteLine("Source branch: " + build.SourceBranch.Replace("refs/heads/", ""));
+                Console.WriteLine();
+            }
 
-            if (build == null)
+            if (!builds.Any())
             {
                 throw new Exception("Couldn't find build for package version: " + packageVersion);
             }
 
-            Console.WriteLine("Package Version: " + packageVersion);
-            Console.WriteLine("Commit Sha: " + build.SourceVersion);
         }
-        
+
         private static async Task<GitRepository> GetVSRepositoryAsync(GitHttpClient gitClient)
         {
             return await gitClient.GetRepositoryAsync("DevDiv", "VS");
