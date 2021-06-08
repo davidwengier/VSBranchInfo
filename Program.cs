@@ -107,7 +107,7 @@ namespace CreateTagsForVSRelease
 
             if (!builds.Any())
             {
-                throw new Exception("Couldn't find build for package version: " + packageVersion);
+                throw new Exception("Couldn't find build for package version: " + packageVersion + ", build number: " + buildNumber);
             }
 
         }
