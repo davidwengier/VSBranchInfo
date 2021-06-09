@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.1.1" />
-    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.0.3" />
-    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.153.0" />
+    <PackageReference Include="Azure.Identity" Version="1.5.0-beta.1" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.2.0-beta.5" />
+    <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0096" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="16.185.0-preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.185.0-preview" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="16.185.0-preview" />
   </ItemGroup>
 
 </Project>
