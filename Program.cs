@@ -146,6 +146,7 @@ namespace CreateTagsForVSRelease
             {
                 dir = dir.Parent;
             }
+
             return Path.Combine(dir.FullName, filename);
         }
     }
