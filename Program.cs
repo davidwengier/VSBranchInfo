@@ -79,41 +79,6 @@ namespace VSBranchInfo
             }
         }
 
-        private static async Task WriteArtifactInfo(AzDOConnection connection, Build build)
-        {
-            var artifact = await connection.BuildClient.GetArtifactAsync(build.Project.Id, build.Id, "PackageArtifacts");
-
-            var (id, name) = ParseContainerId(artifact.Resource.Data);
-
-            var projectId = (await connection.ProjectClient.GetProject(connection.BuildProjectName)).Id;
-
-            var items = await connection.ContainerClient.QueryContainerItemsAsync(id, projectId, name);
-
-            var links = from i in items
-                        where i.ItemType == Microsoft.VisualStudio.Services.FileContainer.ContainerItemType.Folder
-                        where i.Path == "PackageArtifacts/PreRelease" ||
-                              i.Path == "PackageArtifacts/Release"
-                        select (i.Path.Split('/').Last(), i.ContentLocation);
-
-            WriteNamesAndValues("Packages", links);
-        }
-
-        // Copied from Mitch Denny: https://dev.azure.com/mseng/AzureDevOps/_git/ArtifactTool?path=/src/ArtifactTool/Commands/PipelineArtifacts/PipelineArtifactDownloadCommand.cs&version=GBusers/midenn/fcs-integration&line=68&lineEnd=69&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
-        // Note: He wishes not to have his name attached to it.
-        private static (long id, string name) ParseContainerId(string resourceData)
-        {
-            // Example of resourceData: "#/7029766/artifacttool-alpine-x64-Debug"
-            var segments = resourceData.Split('/');
-
-            long containerId;
-            if (segments.Length == 3 && segments[0] == "#" && long.TryParse(segments[1], out containerId))
-            {
-                return (containerId, segments[2]);
-            }
-
-            throw new Exception($"Resource data value '{resourceData}' was not expected.");
-        }
-
         private static async Task<(string packageVersion, string buildNumber)> GetRoslynPackageInfo(string branch, AzDOConnection devdiv)
         {
             var commit = new GitVersionDescriptor { VersionType = GitVersionType.Branch, Version = branch };
@@ -173,6 +138,41 @@ namespace VSBranchInfo
             catch
             {
                 return null;
+            }
+        }
+
+        // Inspired by Mitch Denny: https://dev.azure.com/mseng/AzureDevOps/_git/ArtifactTool?path=/src/ArtifactTool/Commands/PipelineArtifacts/PipelineArtifactDownloadCommand.cs&version=GBusers/midenn/fcs-integration&line=68&lineEnd=69&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
+        // Note: He wishes not to have his name attached to it.
+        private static async Task WriteArtifactInfo(AzDOConnection connection, Build build)
+        {
+            var artifact = await connection.BuildClient.GetArtifactAsync(build.Project.Id, build.Id, "PackageArtifacts");
+
+            var (id, name) = ParseContainerId(artifact.Resource.Data);
+
+            var projectId = (await connection.ProjectClient.GetProject(connection.BuildProjectName)).Id;
+
+            var items = await connection.ContainerClient.QueryContainerItemsAsync(id, projectId, name);
+
+            var links = from i in items
+                        where i.ItemType == Microsoft.VisualStudio.Services.FileContainer.ContainerItemType.Folder
+                        where i.Path == "PackageArtifacts/PreRelease" ||
+                              i.Path == "PackageArtifacts/Release"
+                        select (i.Path.Split('/').Last(), i.ContentLocation + "&%24format=zip&saveAbsolutePath=false"); // %24 == $
+
+            WriteNamesAndValues("Packages", links);
+
+            static (long id, string name) ParseContainerId(string resourceData)
+            {
+                // Example of resourceData: "#/7029766/artifacttool-alpine-x64-Debug"
+                var segments = resourceData.Split('/');
+
+                long containerId;
+                if (segments.Length == 3 && segments[0] == "#" && long.TryParse(segments[1], out containerId))
+                {
+                    return (containerId, segments[2]);
+                }
+
+                throw new Exception($"Resource data value '{resourceData}' was not in expected format.");
             }
         }
 
